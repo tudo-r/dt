@@ -10,20 +10,29 @@ exit = function(status, msg, ..., help=FALSE) {
   quit(save = "no", status = status)
 }
 
-silent_require = function(x) {
-  suppressPackageStartupMessages(require(x, character.only=TRUE))
-}
-
 try_install = function(pkgs) {
+  silent_require = function(x)
+    suppressPackageStartupMessages(require(x, character.only=TRUE))
   lapply(pkgs, function(pkg) {
     if (!silent_require(pkg)) {
       ok = try(install.packages(pkg))
       if (inherits(ok, "try-error") || !silent_require(pkg))
-        exit(1L, sprintf("Unable to install package '%s'", pkg))
+        exit(1L, "Unable to install package '%s'", pkg)
     }
   })
   invisible(TRUE)
 }
+
+# FIXME bench this
+# with_pmake = function(threads, expr) {
+#   if (threads == 1L)
+#     return(expr)
+#   make = Sys.getenv("MAKE", "make")
+#   if (grepl("-j[0-9]+", make))
+#     return(expr)
+#   make = paste0(make, " -j", threads)
+#   with_envvar(c(MAKE=make), expr)
+# }
 
 get_package = function(dir) {
   if (is.na(dir)) {
@@ -37,57 +46,67 @@ get_package = function(dir) {
   pkg = as.package(dirname(normalizePath(fn)))
 }
 
-
 try_install(c("methods", "optparse", "devtools"))
-description = paste(
-  "Available commands:",
-  "  build:    Build R source package",
-  "  check:    Checks package and variable usage",
-  "  deps:     Install required dependencies, including suggests",
-  "  document: Build documentation using roxygen2",
-  "  install:  Install R package and required dependencies",
-  "  make:     Build documentation and install package",
-  "  test:     Run unit tests",
-  "",
-  "Argument DIR must point to directory containing the DESCRIPTION file.",
-  "If not provided, DESCRIPTION file is searched in current directory and",
-  "up to two parents.",
-  sep = "\n")
 
-opts = list(
+description = "
+Available commands:
+  build:    Build R source package
+  clean:    Remove compiled dlls from src/
+  check:    Checks package and variable usage
+  deps:     Install required dependencies, including suggests
+  document: Build documentation using roxygen2
+  install:  Install R package and required dependencies
+  make:     Build documentation and install package
+  revdep:   Check reverse dependencies
+  test:     Run unit tests
+  usage:    Check variable usage using codetools
+  winbuild: Upload package to win-builder
+
+Argument DIR must point to directory containing the DESCRIPTION file.
+If not provided, DESCRIPTION file is searched in current directory and
+up to two parents."
+options = list(
+  make_option("--devel", action = "store_true",
+    default=FALSE, dest = "devel",
+    help = "Test against devel instead of release for winbuild."),
   make_option("--quick", action = "store_true",
     default=FALSE, dest = "quick",
-    help = "Set 'quick' in devtools::install and 'clean' in devtools::document()")
+    help = "Set 'quick' in devtools::install and 'clean' in devtools::document()."),
+  make_option("--threads", action = "store",
+    default=1L, dest = "threads", type="integer",
+    help = "Define how many threads to use. Defaults to 1.")
 )
 
 parser = OptionParser(usage = "%prog [options] command [DIR]",
-  option_list = opts,
+  option_list = options,
   description = description,
 )
 args = parse_args(parser, positional_arguments=TRUE)
-if (length(args$args) == 0L || length(args$args) > 2L)
+opts = args$options
+args = args$args
+
+if (length(args) == 0L || length(args) > 2L)
   exit(1L, "Incorrect number of arguments", help=TRUE)
-cmd = as.character(args$args[1L])
-dir = as.character(args$args[2L])
 
-pkg = get_package(dir)
+pkg = get_package(args[2L])
 
-switch(cmd,
+switch(args[1L],
   make = {
     document(pkg, clean=TRUE)
-    install(pkg, quick=args$options$quick,
+    install(pkg, quick=options$quick,
       dependencies=c("Depends", "Imports", "LinkingTo"))
   },
   check = {
     try_install("codetools")
     install_deps(pkg, dependencies=TRUE)
     check(pkg)
-    message("\n\nChecking usage using codetools...")
-    load_all(pkg)
+  },
+  usage = {
+    load_all(pkg, export_all=FALSE)
     checkUsagePackage(pkg$package)
   },
   install = {
-    install(pkg, quick = args$options$quick,
+    install(pkg, quick = options$quick,
       dependencies=c("Depends", "Imports", "LinkingTo"))
   },
   test = {
@@ -100,9 +119,29 @@ switch(cmd,
     install_deps(pkg, dependencies=TRUE)
   },
   document = {
-    document(pkg, clean=args$options$quick)
+    document(pkg, clean=options$quick)
   },
-  exit(1L, "Unknown command '%s'", cmd, help=TRUE)
+  clean = {
+    clean_dll(pkg)
+  },
+  winbuild = {
+    document(pkg, clean=TRUE)
+    build_win(pkg,
+      version=ifelse(options$devel, "R-devel", "R-release"))
+  },
+  revdep = {
+    lib = file.path(tempfile("R-lib"))
+    dir.create(lib, recursive=TRUE)
+    deps = revdep(pkg$package)
+    install.packages(deps, lib=lib)
+    ok = check_cran(deps, libpath=lib, threads=options$threads)
+    failed = names(Filter(Negate(is.null), ok))
+    if (length(failed))
+      cat("Failed packages:", paste(failed, collapse=", "), "\n")
+    else
+      cat("All okay!\n")
+  },
+  exit(1L, "Unknown command '%s'", args[1L], help=TRUE)
 )
 
 exit(0L)
