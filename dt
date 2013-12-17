@@ -1,0 +1,110 @@
+#!/usr/bin/env Rscript
+
+exit = function(status, msg, ..., help=FALSE) {
+  if (!missing(msg))
+    cat("Error: ", sprintf(msg, ...), "\n", sep = "")
+  if (help) {
+    cat("\n")
+    print_help(parser)
+  }
+  quit(save = "no", status = status)
+}
+
+silent_require = function(x) {
+  suppressPackageStartupMessages(require(x, character.only=TRUE))
+}
+
+try_install = function(pkgs) {
+  lapply(pkgs, function(pkg) {
+    if (!silent_require(pkg)) {
+      ok = try(install.packages(pkg))
+      if (inherits(ok, "try-error") || !silent_require(pkg))
+        exit(1L, sprintf("Unable to install package '%s'", pkg))
+    }
+  })
+  invisible(TRUE)
+}
+
+get_package = function(dir) {
+  if (is.na(dir)) {
+    fn = file.path(getwd(), c(".", "..", "../.."), "DESCRIPTION")
+  } else {
+    fn = file.path(dir, "DESCRIPTION")
+  }
+  fn = head(Filter(file.exists, fn), 1L)
+  if (!length(fn))
+    exit(1L, "DESCRIPTION file not found", help=FALSE)
+  pkg = as.package(dirname(normalizePath(fn)))
+}
+
+
+try_install(c("methods", "optparse", "devtools"))
+description = paste(
+  "Available commands:",
+  "  build:    Build R source package",
+  "  check:    Checks package and variable usage",
+  "  deps:     Install required dependencies, including suggests",
+  "  document: Build documentation using roxygen2",
+  "  install:  Install R package and required dependencies",
+  "  make:     Build documentation and install package",
+  "  test:     Run unit tests",
+  "",
+  "Argument DIR must point to directory containing the DESCRIPTION file.",
+  "If not provided, DESCRIPTION file is searched in current directory and",
+  "up to two parents.",
+  sep = "\n")
+
+opts = list(
+  make_option("--quick", action = "store_true",
+    default=FALSE, dest = "quick",
+    help = "Set 'quick' in devtools::install and 'clean' in devtools::document()")
+)
+
+parser = OptionParser(usage = "%prog [options] command [DIR]",
+  option_list = opts,
+  description = description,
+)
+args = parse_args(parser, positional_arguments=TRUE)
+if (length(args$args) == 0L || length(args$args) > 2L)
+  exit(1L, "Incorrect number of arguments", help=TRUE)
+cmd = as.character(args$args[1L])
+dir = as.character(args$args[2L])
+
+pkg = get_package(dir)
+
+switch(cmd,
+  make = {
+    document(pkg, clean=TRUE)
+    install(pkg, quick=args$options$quick,
+      dependencies=c("Depends", "Imports", "LinkingTo"))
+  },
+  check = {
+    try_install("codetools")
+    install_deps(pkg, dependencies=TRUE)
+    check(pkg)
+    message("\n\nChecking usage using codetools...")
+    load_all(pkg)
+    checkUsagePackage(pkg$package)
+  },
+  install = {
+    install(pkg, quick = args$options$quick,
+      dependencies=c("Depends", "Imports", "LinkingTo"))
+  },
+  test = {
+    test(pkg)
+  },
+  build = {
+    build(pkg)
+  },
+  deps = {
+    install_deps(pkg, dependencies=TRUE)
+  },
+  document = {
+    document(pkg, clean=args$options$quick)
+  },
+  exit(1L, "Unknown command '%s'", cmd, help=TRUE)
+)
+
+exit(0L)
+
+# vim: ft=r
