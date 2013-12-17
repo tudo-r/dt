@@ -65,7 +65,7 @@ Available commands:
 Argument DIR must point to directory containing the DESCRIPTION file.
 If not provided, DESCRIPTION file is searched in current directory and
 up to two parents."
-options = list(
+opts = list(
   make_option("--devel", action = "store_true",
     default=FALSE, dest = "devel",
     help = "Test against devel instead of release for winbuild."),
@@ -78,22 +78,20 @@ options = list(
 )
 
 parser = OptionParser(usage = "%prog [options] command [DIR]",
-  option_list = options,
+  option_list = opts,
   description = description,
 )
 args = parse_args(parser, positional_arguments=TRUE)
-opts = args$options
-args = args$args
 
-if (length(args) == 0L || length(args) > 2L)
+if (length(args$args) == 0L || length(args$args) > 2L)
   exit(1L, "Incorrect number of arguments", help=TRUE)
 
-pkg = get_package(args[2L])
+pkg = get_package(args$args[2L])
 
-switch(args[1L],
+switch(args$args[1L],
   make = {
     document(pkg, clean=TRUE)
-    install(pkg, quick=options$quick,
+    install(pkg, quick=args$options$quick,
       dependencies=c("Depends", "Imports", "LinkingTo"))
   },
   check = {
@@ -106,7 +104,7 @@ switch(args[1L],
     checkUsagePackage(pkg$package)
   },
   install = {
-    install(pkg, quick = options$quick,
+    install(pkg, quick = args$options$quick,
       dependencies=c("Depends", "Imports", "LinkingTo"))
   },
   test = {
@@ -119,7 +117,7 @@ switch(args[1L],
     install_deps(pkg, dependencies=TRUE)
   },
   document = {
-    document(pkg, clean=options$quick)
+    document(pkg, clean=args$options$quick)
   },
   clean = {
     clean_dll(pkg)
@@ -127,21 +125,21 @@ switch(args[1L],
   winbuild = {
     document(pkg, clean=TRUE)
     build_win(pkg,
-      version=ifelse(options$devel, "R-devel", "R-release"))
+      version=ifelse(args$options$devel, "R-devel", "R-release"))
   },
   revdep = {
     lib = file.path(tempfile("R-lib"))
     dir.create(lib, recursive=TRUE)
     deps = revdep(pkg$package)
     install.packages(deps, lib=lib)
-    ok = check_cran(deps, libpath=lib, threads=options$threads)
+    ok = check_cran(deps, libpath=lib, threads=args$options$threads)
     failed = names(Filter(Negate(is.null), ok))
     if (length(failed))
       cat("Failed packages:", paste(failed, collapse=", "), "\n")
     else
       cat("All okay!\n")
   },
-  exit(1L, "Unknown command '%s'", args[1L], help=TRUE)
+  exit(1L, "Unknown command '%s'", args$args[1L], help=TRUE)
 )
 
 exit(0L)
