@@ -23,17 +23,6 @@ try_install = function(pkgs) {
   invisible(TRUE)
 }
 
-# FIXME bench this
-# with_pmake = function(threads, expr) {
-#   if (threads == 1L)
-#     return(expr)
-#   make = Sys.getenv("MAKE", "make")
-#   if (grepl("-j[0-9]+", make))
-#     return(expr)
-#   make = paste0(make, " -j", threads)
-#   with_envvar(c(MAKE=make), expr)
-# }
-
 get_package = function(dir) {
   if (is.na(dir)) {
     fn = file.path(getwd(), c(".", "..", "../.."), "DESCRIPTION")
@@ -73,8 +62,8 @@ opts = list(
     default=FALSE, dest = "quick",
     help = "Set 'quick' in devtools::install and 'clean' in devtools::document()."),
   make_option("--threads", action = "store",
-    default=1L, dest = "threads", type="integer",
-    help = "Define how many threads to use. Defaults to 1.")
+    default=0L, dest = "threads", type="integer",
+    help = "Define how many threads to use. Defaults to 0 (unset).")
 )
 
 parser = OptionParser(usage = "%prog [options] command [DIR]",
@@ -87,6 +76,8 @@ if (length(args$args) == 0L || length(args$args) > 2L)
   exit(1L, "Incorrect number of arguments", help=TRUE)
 
 pkg = get_package(args$args[2L])
+if (args$options$threads > 0L)
+  options(Ncpus = args$options$threads)
 
 switch(args$args[1L],
   make = {
@@ -95,11 +86,11 @@ switch(args$args[1L],
       dependencies=c("Depends", "Imports", "LinkingTo"))
   },
   check = {
-    try_install("codetools")
     install_deps(pkg, dependencies=TRUE)
     check(pkg)
   },
   usage = {
+    try_install("codetools")
     load_all(pkg, export_all=FALSE)
     checkUsagePackage(pkg$package)
   },
@@ -132,7 +123,7 @@ switch(args$args[1L],
     dir.create(lib, recursive=TRUE)
     deps = revdep(pkg$package)
     install.packages(deps, lib=lib)
-    ok = check_cran(deps, libpath=lib, threads=args$options$threads)
+    ok = check_cran(deps, libpath=lib, threads=getOption("Ncpus", 1L))
     failed = names(Filter(Negate(is.null), ok))
     if (length(failed))
       cat("Failed packages:", paste(failed, collapse=", "), "\n")
