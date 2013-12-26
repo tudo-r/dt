@@ -85,6 +85,8 @@ if (args$options$threads > 0L)
 
 switch(args$args[1L],
   make = {
+    # clean_dll(pkg)
+    file.create(file.path(pkg$path, "NAMESPACE"))
     document(pkg, clean=TRUE)
     install(pkg, quick=args$options$quick,
       dependencies=c("Depends", "Imports", "LinkingTo"))
