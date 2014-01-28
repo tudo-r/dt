@@ -2,12 +2,12 @@
 
 exit = function(status, msg, ..., help=FALSE) {
   if (!missing(msg))
-    cat("Error: ", sprintf(msg, ...), "\n", sep = "")
+    cat("Error: ", sprintf(msg, ...), "\n", sep="")
   if (help) {
     cat("\n")
     print_help(parser)
   }
-  quit(save = "no", status = status)
+  quit(save="no", status=status)
 }
 
 try_install = function(pkgs) {
@@ -59,20 +59,23 @@ Argument DIR must point to directory containing the DESCRIPTION file.
 If not provided, DESCRIPTION file is searched in current directory and
 up to two parents."
 opts = list(
-  make_option("--devel", action = "store_true",
-    default=FALSE, dest = "devel",
-    help = "Test against devel instead of release for winbuild."),
-  make_option("--quick", action = "store_true",
-    default=FALSE, dest = "quick",
-    help = "Set 'quick' in devtools::install and 'clean' in devtools::document()."),
-  make_option("--threads", action = "store",
-    default=0L, dest = "threads", type="integer",
-    help = "Define how many threads to use. Defaults to 0 (unset).")
+  make_option("--devel", action="store_true",
+    default=FALSE, dest="devel",
+    help="Test against devel instead of release for winbuild."),
+  make_option("--quick", action="store_true",
+    default=FALSE, dest="quick",
+    help="Set 'quick' in devtools::install and 'clean' in devtools::document()."),
+  make_option("--filter", action="store", type="character",
+    default=NULL, dest="filter",
+    help="Filter passed to devtools::test()."),
+  make_option("--threads", action="store",
+    default=0L, dest="threads", type="integer",
+    help="Define how many threads to use. Defaults to 0 (unset).")
 )
 
-parser = OptionParser(usage = "%prog [options] command [DIR]",
-  option_list = opts,
-  description = description,
+parser = OptionParser(usage="%prog [options] command [DIR]",
+  option_list=opts,
+  description=description,
 )
 args = parse_args(parser, positional_arguments=TRUE)
 
@@ -81,7 +84,7 @@ if (length(args$args) == 0L || length(args$args) > 2L)
 
 pkg = get_package(args$args[2L])
 if (args$options$threads > 0L)
-  options(Ncpus = args$options$threads)
+  options(Ncpus=args$options$threads)
 
 switch(args$args[1L],
   make = {
@@ -101,11 +104,11 @@ switch(args$args[1L],
     checkUsagePackage(pkg$package)
   },
   install = {
-    install(pkg, quick = args$options$quick,
+    install(pkg, quick=args$options$quick,
       dependencies=c("Depends", "Imports", "LinkingTo"))
   },
   test = {
-    test(pkg)
+    test(pkg, filter=args$options$filter)
   },
   build = {
     build(pkg)
