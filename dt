@@ -39,7 +39,7 @@ get_package = function(dir) {
   as.package(dir)
 }
 
-try_install(c("methods", "optparse", "devtools"))
+try_install(c("methods", "optparse", "devtools", "roxygen2", "testthat"))
 
 description = "
 Available commands:
