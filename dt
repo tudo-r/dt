@@ -25,7 +25,7 @@ try_install = function(pkgs) {
 
 get_package = function(dir) {
   if (is.na(dir)) {
-    fn = file.path(getwd(), c(".", "..", "../.."), "DESCRIPTION")
+    fn = file.path(getwd(), c(".", "..", file.path("..", "..")), "DESCRIPTION")
   } else {
     fn = file.path(dir, "DESCRIPTION")
   }
