@@ -33,9 +33,6 @@ get_package = function(dir) {
   if (!length(fn))
     exit(1L, "DESCRIPTION file not found", help=FALSE)
   dir = dirname(normalizePath(fn))
-  ns = file.path(dir, "NAMESPACE")
-  if (!file.exists(ns))
-    file.create(ns)
   as.package(dir)
 }
 
@@ -88,8 +85,6 @@ if (args$options$threads > 0L)
 
 switch(args$args[1L],
   make = {
-    # clean_dll(pkg)
-    file.create(file.path(pkg$path, "NAMESPACE"))
     document(pkg, clean=TRUE)
     install(pkg, quick=args$options$quick,
       dependencies=c("Depends", "Imports", "LinkingTo"))
