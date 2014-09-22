@@ -83,13 +83,15 @@ if (length(args$args) == 0L || length(args$args) > 2L)
   exit(1L, "Incorrect number of arguments", help=TRUE)
 
 pkg = get_package(args$args[2L])
-if (args$options$threads > 0L)
+if (args$options$threads > 0L) {
   options(Ncpus=args$options$threads)
-else
+} else {
   options(Ncpus=parallel::detectCores())
+}
 
-if (args$options$expensive)
+if (args$options$expensive) {
   Sys.setenv(R_EXPENSIVE_EXAMPLE_OK = "TRUE")
+}
 
 switch(args$args[1L],
   make = {
