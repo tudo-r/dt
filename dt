@@ -65,9 +65,12 @@ opts = list(
   make_option("--filter", action="store", type="character",
     default=NULL, dest="filter",
     help="Filter passed to devtools::test()."),
+  make_option("--expensive", action="store_true", type="character",
+    default=FALSE, dest="expensive",
+    help="Set the environment variable for BBmisc::isExpensiveExampleOk()"),
   make_option("--threads", action="store",
     default=0L, dest="threads", type="integer",
-    help="Define how many threads to use. Defaults to 0 (unset).")
+    help="Define how many threads to use. Defaults to 0 (autodetect).")
 )
 
 parser = OptionParser(usage="%prog [options] command [DIR]",
@@ -82,6 +85,11 @@ if (length(args$args) == 0L || length(args$args) > 2L)
 pkg = get_package(args$args[2L])
 if (args$options$threads > 0L)
   options(Ncpus=args$options$threads)
+else
+  options(Ncpus=parallel::detectCores())
+
+if (args$options$expensive)
+  Sys.setenv(R_EXPENSIVE_EXAMPLE_OK = "TRUE")
 
 switch(args$args[1L],
   make = {
