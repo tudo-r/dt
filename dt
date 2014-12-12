@@ -137,10 +137,11 @@ switch(args$args[1L],
     dir.create(lib, recursive=TRUE)
     deps = revdep(pkg$package)
     install.packages(deps, lib=lib)
-    ok = check_cran(deps, libpath=lib, threads=getOption("Ncpus", 1L))
-    failed = names(Filter(Negate(is.null), ok))
+    check.dir = file.path(".", "rev-dep-check")
+    ok = check_cran(deps, libpath=lib, threads=getOption("Ncpus", 1L), check_dir = check.dir)
+    failed = names(Filter(Negate(is.null), ok$results))
     if (length(failed))
-      cat("Failed packages:", paste(failed, collapse=", "), "\n")
+      stop("Failed packages:", paste(failed, collapse=", "), "\n")
     else
       cat("All okay!\n")
   },
