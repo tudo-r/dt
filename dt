@@ -141,7 +141,7 @@ switch(args$args[1L],
     ok = check_cran(deps, libpath=lib, threads=getOption("Ncpus", 1L), check_dir = check.dir)
     failed = names(Filter(Negate(is.null), ok$results))
     if (length(failed))
-      stop("Failed packages:", paste(failed, collapse=", "), "\n")
+      exit(status = 2L, msg = "Failed packages: %s", paste(failed, collapse=", "))
     else
       cat("All okay!\n")
   },
