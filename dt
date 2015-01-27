@@ -133,17 +133,17 @@ switch(args$args[1L],
       version=ifelse(args$options$devel, "R-devel", "R-release"))
   },
   revdep = {
-    lib = file.path(tempfile("R-lib"))
-    dir.create(lib, recursive=TRUE)
-    deps = revdep(pkg$package)
-    install.packages(deps, lib=lib)
+    # libpath: check devtools options, otherwise take home dir path.
+    # if that path does not exist, create it
+    lib = file.path(path.expand("~"), ".dt", "rlib") 
+    lib = getOption("devtool.revdep.libpath", lib)
+    if (!file.exists(lib))
+      dir.create(lib, recursive = TRUE)
+    # the check dir must be accessible after we leave the script, so we can look at it
     check.dir = file.path(".", "rev-dep-check")
-    ok = check_cran(deps, libpath=lib, threads=getOption("Ncpus", 1L), check_dir = check.dir)
-    failed = names(Filter(Negate(is.null), ok$results))
-    if (length(failed))
-      exit(status = 2L, msg = "Failed packages: %s", paste(failed, collapse=", "))
-    else
-      cat("All okay!\n")
+    res = revdep_check(pkg, libpath = lib, check_dir = check.dir)
+    # we probably want to have an exit code on error here
+    cat(revdep_check_summary(res))
   },
   exit(1L, "Unknown command '%s'", args$args[1L], help=TRUE)
 )
