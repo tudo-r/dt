@@ -105,7 +105,7 @@ switch(args$args[1L],
   },
   check = {
     install_deps(pkg, dependencies=TRUE)
-    check(pkg)
+    check(pkg, check_dir = ".")
   },
   usage = {
     try_install("codetools")
