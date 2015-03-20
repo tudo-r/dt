@@ -3,7 +3,7 @@ dt
 
 Command line R script for GNU `make` like functionality.
 
-*If you it, please "star" it on Github.*
+**If you like dt, please "star" it on Github.**
 
 Installation Instructions
 =========================
