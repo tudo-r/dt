@@ -11,11 +11,14 @@ Installation Instructions
 Put in in your `PATH` and make it executable to use.
 
 This can be done in the following way:
+
 1) Clone the repository.
+
 
 2) Make a symlink of the dt-file into your bin-directory, e.g.
 
 `$ ln -s ~/path-to-the-dt-repository/dt /usr/local/bin/` (on Mac)
+
 
 3) Assure that you have installed all the required R-packages:
 
