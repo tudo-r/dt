@@ -1,7 +1,7 @@
 dt
 ==
 
-Command line R script for GNU make like functionality.
+Command line R script for GNU `make` like functionality.
 
 *If you it, please "star" it on Github.*
 
