@@ -20,7 +20,10 @@ This can be done in the following way:
 
 2) Make a symlink of the dt-file into your bin-directory, e.g.
 
-`$ ln -s ~/path-to-the-dt-repository/dt /usr/local/bin/` (on Mac)
+`$ ln -s ~/path-to-the-dt-repository/dt /usr/local/bin/` (on Mac and Linux for all users)
+
+
+`$ ln -s ~/path-to-the-dt-repository/dt ~/bin` (on Linux for your user only)
 
 
 3) Assure that you have installed all the required R-packages:
