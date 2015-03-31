@@ -15,18 +15,25 @@ Installation
 
 1. Include `path-to-the-dt-repository` in your `PATH` variable and make it executable to use.
     1. Linux: Make a symlink of the dt-file into your bin-directory, e.g.
+	
        `$ ln -s ~/path-to-the-dt-repository/dt /usr/local/bin/` (on Mac and Linux for all users)
+	   
 	   `$ ln -s ~/path-to-the-dt-repository/dt ~/bin` (on Linux for your user only)
     1. Windows: Adjust the `PATH` variable in the system environment via the control panel OR
-	   use the admin console command `SETX /M PATH "%PATH%;path-to-the-dt-repository"` to extend the `PATH` variable for the local machine.
+	   use the admin console command
+	   
+	   `SETX /M PATH "%PATH%;path-to-the-dt-repository"`
+	   
+	   to extend the `PATH` variable for the local machine.
 	   (Option `/M` changes the `PATH` in `HKEY_LOCAL_MACHINE` instead of `HKEY_CURRENT_USER`.)
 
 1. Assure that you have installed all the required R-packages:
-```c("methods", "optparse", "devtools", "roxygen2", "testthat", "covr")```
-The first five packages are available on CRAN, whereas the latter can be installed via 
-```splus
-devtools::install_github("jimhester/covr")
-```
+
+`c("methods", "optparse", "devtools", "roxygen2", "testthat", "covr")`
+
+The first five packages are available on CRAN, whereas the latter can be installed via
+
+`devtools::install_github("jimhester/covr")`
 
 Usage
 -----
