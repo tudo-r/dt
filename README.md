@@ -25,7 +25,8 @@ Installation
 	   `SETX /M PATH "%PATH%;path-to-the-dt-repository"`
 	   
 	   to extend the `PATH` variable for the local machine.
-	   (Option `/M` changes the `PATH` in `HKEY_LOCAL_MACHINE` instead of `HKEY_CURRENT_USER`.)
+	   (Option `/M` changes the `PATH` in `HKEY_LOCAL_MACHINE` instead of `HKEY_CURRENT_USER`.
+	   Keep in mind to restart the console before the new `PATH` variable is visible.)
 
 1. Assure that you have installed all the required R-packages:
 
