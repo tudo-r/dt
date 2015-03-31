@@ -29,11 +29,15 @@ Installation
 
 1. Assure that you have installed all the required R-packages:
 
-`c("methods", "optparse", "devtools", "roxygen2", "testthat", "covr")`
+    ```splus
+	c("methods", "optparse", "devtools", "roxygen2", "testthat", "covr")
+	```
 
-The first five packages are available on CRAN, whereas the latter can be installed via
+    The first five packages are available on CRAN, whereas the latter can be installed via
 
-`devtools::install_github("jimhester/covr")`
+    ```splus
+	devtools::install_github("jimhester/covr")
+	```
 
 Usage
 -----
