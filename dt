@@ -97,9 +97,9 @@ if (args$options$expensive) {
 switch(args$args[1L],
   make = {
     document(pkg)
-    build_vignettes(pkg)
     install(pkg, quick=args$options$quick,
-      dependencies=c("Depends", "Imports", "LinkingTo"))
+      dependencies=c("Depends", "Imports", "LinkingTo"),
+      build_vignettes = TRUE)
   },
   cov = {
     package_coverage(args$args[2L])
