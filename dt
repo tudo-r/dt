@@ -47,7 +47,7 @@ Available commands:
   deps:     Install required dependencies, including suggests
   document: Build documentation using roxygen2
   install:  Install R package and required dependencies
-  make:     Build documentation and install package
+  make:     Build documentation, vignettes and install package
   revdep:   Check reverse dependencies
   test:     Run unit tests
   usage:    Check variable usage using codetools
@@ -97,6 +97,7 @@ if (args$options$expensive) {
 switch(args$args[1L],
   make = {
     document(pkg)
+    build_vignettes(pkg)
     install(pkg, quick=args$options$quick,
       dependencies=c("Depends", "Imports", "LinkingTo"))
   },
