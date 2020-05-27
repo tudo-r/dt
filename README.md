@@ -1,3 +1,8 @@
+This Software is Deprecated
+===========================
+
+Please use the successor: [rt](https://github.com/rdatsci/rt/)
+
 dt
 ==
 
